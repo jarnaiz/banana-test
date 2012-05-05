@@ -1,0 +1,127 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript">
+		/*
+		 (function($){
+				$.fn.counter = function() {
+					
+					var cnt = 0;
+					var counter = function(){};
+					
+					return  function(){
+						$(this)
+					};
+					
+					this.hover(
+						function() { $(this).toggleClass(c); }
+					);
+				};
+		})(jQuery);*/
+		
+		/**
+		 * Crea el objeto counter
+		 */
+		function createCounter(element){
+			// variable :)
+			var element = element;
+			// es usada dentro del objeto: closure!
+			return {
+				cnt: 0,
+				started: false,
+				counter: function(){},
+				
+				// ejecuta el conometro
+				start: function() {
+					if (!this.started){
+						console.log("start para el elemento: " + element);
+						var self = this;
+						this.counter = setInterval(function() {
+							self.started = true;
+							//console.log(self.elemenet)
+							element.html(self.cnt);
+							self.cnt++;
+							
+						}, 1000);
+					}
+				},
+				// detiene el conometro
+				// si save = true, guarda el valor en htmlstorage
+				stop: function(save) {
+					
+					if (save && this.started) {
+						
+						var stringArray = localStorage["ranking"];
+						var results = JSON.parse(stringArray);
+						results.push({user: "anonimous", time: this.cnt});
+						console.log(results);
+						localStorage["ranking"] = JSON.stringify(results);
+					}
+					
+					clearInterval(this.counter);
+					this.cnt = 0;
+					this.started = false;
+					element.html(this.cnt);
+				}
+			}
+		}
+		
+		// creamos un array vacio
+		localStorage["ranking"] = JSON.stringify([]);
+		
+			$(document).ready(function() {
+				// creamos una instancia :D
+				var counter = createCounter($("#displayCounter"));
+				
+				$("#start_counter").click(function(e){
+					console.log("start");
+					counter.start();
+				});
+				
+				$("#stop_counter").click(function(e){
+					console.log("stop");
+					counter.stop(true);
+				});
+				
+				$("#showResults").click(function(e){
+					var diplay = $("#displayResult");
+					console.log("show");
+					diplay.html("");
+					var str = localStorage["ranking"];
+					var ranking = JSON.parse(str);
+					
+					console.log(ranking);
+					
+					for (var i=0; i < ranking.length; i++){
+						diplay.append("<p> user: " + ranking[i].user +"<br/>tiempo: " + ranking[i].time + "</p>" );
+					}
+					
+				});
+			});
+			
+			
+		</script>
+		
+		 <style type="text/css">
+			#displayCounter{
+				font-size:42px;
+				font-family:Georgia;
+			}
+		</style>
+		
+	</head>
+	<body>
+		
+		<a id="start_counter" href="#">Empezar</a>
+		<a id="stop_counter" href="#">Stop</a>
+		
+		<a id="showResults" href="#">Mostrar tiempos</a>
+		
+		<div id="displayCounter"></div>
+		
+		<div id="displayResult"></div>
+		
+	</body>
+</html>
