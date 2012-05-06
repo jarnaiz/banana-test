@@ -3,6 +3,8 @@
 	<head>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+		
 		<script type="text/javascript">
 		/*
 		 (function($){
@@ -104,6 +106,43 @@
 			
 		</script>
 		
+		<script type="text/javascript">
+			//
+			// hojas de margarita
+			//
+			$(function() {
+				$( ".hoja" ).draggable();
+				// evento para empezar
+				$( ".hoja" ).bind( "dragstart", function(event, ui) {
+					console.log("start dragable para la hoja");
+					// comenzamos un counter y cuando acabe lo hacemos
+					// desaparecer
+					// a los 3 segundos lo hacemos desaparecer
+					// TODO: añadir control: si no arrastra durante dos segundos: que vuelva a su posición
+					// original
+					var time = 2;
+					var self = this;
+					var counter = setInterval(function() {
+							if ( time < 0){
+								console.log("se acabo el drag :D")
+
+								clearInterval(counter);
+								// ejecutamos el desaparecer de la hoja
+								console.log(self);
+								$(self).fadeOut('slow', function() {
+									// Animation complete.
+									// TODO: añadir al contador de hojas, para que cuando
+									// se quiten todas, pare el tiempo.
+								  });
+							}
+							else{
+								time--;
+							}
+						}, 1000);
+				});
+			});
+		</script>
+		
 		 <style type="text/css">
 			#displayCounter{
 				font-size:42px;
@@ -116,6 +155,15 @@
 		
 		<a id="start_counter" href="#">Empezar</a>
 		<a id="stop_counter" href="#">Stop</a>
+		
+		
+		<div class="margarita">
+
+			<div class="hoja">
+				<p>Drag me around</p>
+			</div>
+
+		</div><!-- End demo -->
 		
 		<a id="showResults" href="#">Mostrar tiempos</a>
 		
