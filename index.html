@@ -4,6 +4,7 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
 		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+		<script type="text/javascript" src="./counter.js"></script>
 		
 		<script type="text/javascript">
 		/*
@@ -22,53 +23,6 @@
 					);
 				};
 		})(jQuery);*/
-		
-		/**
-		 * Crea el objeto counter
-		 */
-		function createCounter(element){
-			// variable :)
-			var element = element;
-			// es usada dentro del objeto: closure!
-			return {
-				cnt: 0,
-				started: false,
-				counter: function(){},
-				
-				// ejecuta el conometro
-				start: function() {
-					if (!this.started){
-						console.log("start para el elemento: " + element);
-						var self = this;
-						this.counter = setInterval(function() {
-							self.started = true;
-							//console.log(self.elemenet)
-							element.html(self.cnt);
-							self.cnt++;
-							
-						}, 1000);
-					}
-				},
-				// detiene el conometro
-				// si save = true, guarda el valor en htmlstorage
-				stop: function(save) {
-					
-					if (save && this.started) {
-						
-						var stringArray = localStorage["ranking"];
-						var results = JSON.parse(stringArray);
-						results.push({user: "anonimous", time: this.cnt});
-						console.log(results);
-						localStorage["ranking"] = JSON.stringify(results);
-					}
-					
-					clearInterval(this.counter);
-					this.cnt = 0;
-					this.started = false;
-					element.html(this.cnt);
-				}
-			}
-		}
 		
 		// creamos un array vacio
 		localStorage["ranking"] = JSON.stringify([]);
@@ -107,10 +61,12 @@
 		</script>
 		
 		<script type="text/javascript">
-			//
+			// http://svg-edit.googlecode.com/svn/branches/2.5.1/editor/svg-editor.html
 			// hojas de margarita
 			//
 			$(function() {
+				rotate($("#leaf_daisy"), 10);
+			// TODO: para que funcione http://stackoverflow.com/questions/1108480/svg-draggable-using-jquery-and-jquery-svg
 				$( ".hoja" ).draggable();
 				// evento para empezar
 				$( ".hoja" ).bind( "dragstart", function(event, ui) {
@@ -124,16 +80,21 @@
 					var self = this;
 					var counter = setInterval(function() {
 							if ( time < 0){
-								console.log("se acabo el drag :D")
-
-								clearInterval(counter);
-								// ejecutamos el desaparecer de la hoja
+								
+								console.log("se acabo el drag para el elemento:")
 								console.log(self);
+								clearInterval(counter);
+								
+								// ejecutamos el desaparecer de la hoja
+								// no funciona:
 								$(self).fadeOut('slow', function() {
 									// Animation complete.
 									// TODO: añadir al contador de hojas, para que cuando
 									// se quiten todas, pare el tiempo.
+									console.log("fadeout complete");
 								  });
+								 // este si funciona!
+								//fade($(self));
 							}
 							else{
 								time--;
@@ -141,6 +102,40 @@
 						}, 1000);
 				});
 			});
+			// fade para svg
+			// http://dev.opera.com/articles/view/advanced-svg-animation-techniques/
+			// TODO: añadir callback de eventos como oncomplete.
+			function  fade (target) {
+				// create the fade animation
+				var animation = document.createElementNS(
+									 'http://www.w3.org/2000/svg', 'animate');
+				animation.setAttributeNS(null, 'attributeName', 'fill-opacity');
+				animation.setAttributeNS(null, 'begin', 'indefinite');
+				animation.setAttributeNS(null, 'to', 0);
+				animation.setAttributeNS(null, 'dur', 0.25);
+				animation.setAttributeNS(null, 'fill', 'freeze');
+				var animationStroke = document.createElementNS(
+									 'http://www.w3.org/2000/svg', 'animate');
+				animationStroke.setAttributeNS(null, 'attributeName', 'stroke-opacity');
+				animationStroke.setAttributeNS(null, 'begin', 'indefinite');
+				animationStroke.setAttributeNS(null, 'to', 0);
+				animationStroke.setAttributeNS(null, 'dur', 0.25);
+				animationStroke.setAttributeNS(null, 'fill', 'freeze');
+				// link the animation to the target
+				target.append(animation);
+				target.append(animationStroke);
+				// start the animation
+				animation.beginElement();
+				animationStroke.beginElement();
+			}
+			/**
+			 *
+			 */
+			function rotate(target, grade) {
+			// 50 y 50 es el x e y desde donde se quiere rotar relativo al elemento
+			// TODO: calcular este x e y automáticamente
+				target.attr("transform", "rotate(" + grade + " 50 50)");
+			}
 		</script>
 		
 		 <style type="text/css">
@@ -162,7 +157,19 @@
 			<div class="hoja">
 				<p>Drag me around</p>
 			</div>
-
+			
+			<svg id="draw" height="400" xmlns="http://www.w3.org/2000/svg">
+			
+				<circle id="core_daisy" cx="50" cy="50" stroke="#000000" r="50" stroke-width="2"  fill="yellow" stroke-opacity="1"/>
+			
+				<path fill="#FF0000" stroke="#000000" stroke-width="2" 
+					stroke-dasharray="null" stroke-linejoin="null" stroke-linecap="null" 
+					style="pointer-events:inherit"
+					d="M349,231.72269C407.66666,207.81512 453.33334,167.90756 525,160C634.69006,162 622.38013,284 517.07019,280C451.04678,275.90756 405.02341,247.81512 349,231.72269z" 
+					id="leaf_daisy" fill-opacity="1" stroke-opacity="1">
+				</path>
+		
+			</svg>
 		</div><!-- End demo -->
 		
 		<a id="showResults" href="#">Mostrar tiempos</a>

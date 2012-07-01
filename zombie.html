@@ -1,0 +1,221 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+		<script 
+		  type="text/javascript"
+		  src="./vegas/jquery.vegas.js">
+		</script>
+		
+		<link 
+			rel="stylesheet" 
+			type="text/css" 
+			href="./vegas/jquery.vegas.css" />
+		
+		<script type="text/javascript">
+		// background full like about.me
+		$( function() {
+		  $.vegas({
+			src:'background.jpg'
+		  });
+		 // $.vegas('overlay', {
+		//	src:'overlays/13.png'
+		 // });
+		});
+		
+		function createZombie(x, y) {
+			//position: relative; left: 10px;
+			var $element = $("<img></img>").attr('src', './zombie.jpg').css('position', 'relative').css('left', x + 'px').css('top', y + 'px');
+			$('body').append($element);
+			
+			var zombie = {
+					// duración en recorrer un pixel en ms
+					speed: 5,
+					// shots que puede aguantar un zombie
+					health: 5,
+					// lugares a donde va a ir,
+					// TODO: lista de walkto
+					_walkTo: [{x: 0, y: 0}],
+					// funcion de añadir walk_to
+					walkTo : function(data){
+						this._walkTo.push(data);
+						return this;
+					},
+					
+					start: function(){
+						// ejecutamos el proceso de ir a unas coordinadas
+						console.log(this);
+						this._walkTo_process();
+					},
+					stop: function(){
+						//http://api.jquery.com/stop/
+						$element.stop();
+						
+					},
+					// giramos de izquierda a derecha
+					turn_x: function(x){
+						// TODO: animation
+						switch(x){
+							case '+':
+								// start animation hacia la derecha
+								$element.attr('src', './zombie.jpg')
+								break;
+							case '-':
+								// start animation hacia la izquierda
+								$element.attr('src', './zombie_izq.jpg')
+								break;
+						}
+					},
+					// giramos de arriba abajo
+					turn_y: function(y){
+						// TODO: animation
+						switch(y){
+							case '+':
+							  // start animation hacia arriba
+							  break;
+							case '-':
+							 // start animation hacia abajo
+							  break;
+						}
+						
+					},
+					dead: function(){
+						this.stop();
+						// 1 empieza animacion
+						// TODO: animacion
+						// 2. una vez terminada la animación de muerte
+						// hacemos que desaparezca
+						$element.fadeOut(200, function() {
+							$element.remove();
+						});
+					},
+					shot: function(){
+						this.health--;
+						if (this.health == 0){
+							this.dead();
+						}
+						else{
+							console.log("dado pero no muerto");
+							$element.fadeOut(20, function() {
+									console.log("completado fadeout");
+								$element.fadeIn(20, function(){});
+							});
+							// effect shine_
+						}
+					},
+					/**
+					 * métodos privados
+					 */
+					 
+					 /**
+					 * Pra calcular la distancia de una diagonal se utiliza
+					 * la formula: http://www.vitutor.com/geo/eso/as_6.html
+					 * raiz cuadrada del cuadrado del lado1 + el cuadrado del lado2.
+					 */
+					 _calculateDistance: function(x, y){
+						var powX2 = Math.pow(Math.abs(x), 2);
+						var powY2 = Math.pow(Math.abs(y), 2);
+						return Math.sqrt(powX2 + powY2); 
+					 },
+					 /**
+					 * ejecuta la acción de andar
+					 * según el estado actual del zombie.
+					 */
+					_walkTo_process: function(){
+						console.log($element);
+						var walkTo = this._walkTo.shift();
+						// calculamos donde estamos:
+						if (walkTo.x > 0){
+							this.turn_x('+');
+						}
+						else{
+							this.turn_x('-');
+						}
+						
+						if (walkTo.y > 0){
+							this.turn_y('+');
+						}
+						else{
+							this.turn_y('-');
+						}
+						
+						console.log("walking to: " + walkTo.x + ", " + walkTo.y);
+						var self = this;
+						// http://api.jquery.com/animate/
+						 $element.animate({
+							"left":  '+=' + walkTo.x ,
+							"top": '+=' + walkTo.y ,
+							},
+							{
+								// para calcular la velocidad tenemos que calcular 
+								duration: this.speed * this._calculateDistance(walkTo.x, walkTo.y),
+								step: function(now, fx){
+									//console.log(now);
+									//console.log(fx);
+									// mejor: en vez de esto crear gifs con las partes necesarias
+									/*if ($container.attr("src") == "./zombie.jpg"){
+										$container.attr("src", "./zombie2.jpg");
+									}
+									else{
+										$container.attr("src", "./zombie.jpg");
+									}*/
+									
+									//self.stop();
+									
+								},
+								queue: false,
+								 specialEasing: {
+								  width: 'linear',
+								  height: 'linear',
+								  left: 'linear'
+								},
+								complete: function(){
+									console.log("complete walikng to: " + walkTo.x + ", " + walkTo.y);
+									// quedan walkings?
+									if (self._walkTo.length >  0){
+										// giramos? turn_x o turn_y
+										self._walkTo_process();
+									}
+								}
+							}
+						  );
+					}
+					
+				};
+			
+				$element.click(function(e){
+					zombie.shot();
+				});
+				
+				return  zombie;
+			}
+		
+		
+		$(document).ready(function() {
+		
+		
+			var zombie = createZombie(10, 10);
+			var zombie2 = createZombie(500, 300);
+			var zombie3 = createZombie(600, 10);
+			/*
+			$container.click(function(e){
+				zombie.shot();
+			});
+		*/
+			zombie.walkTo({x: 200, y: 300}).walkTo({x: 500, y: 100}).walkTo({x: -100, y: -30}).start();
+			zombie2.walkTo({x: -400, y: 300}).walkTo({x: 330, y: -50}).walkTo({x: -100, y: -40}).start();
+			zombie3.walkTo({x: -200, y: 100}).start();
+		});
+			
+			
+		</script>
+	
+		
+		
+	</head>
+	<body>
+		
+	</body>
+</html>

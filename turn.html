@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+		<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.18/jquery-ui.min.js"></script>
+		
+		<style>
+		#toTurn {
+		   width:100px;
+		   height:100px;
+		   position:absolute;
+		   top:100px;
+		   left:100px; 
+		   text-indent: 90px;
+		   background-color:red;
+		}​
+		</style>
+		<script type="text/javascript">
+				$(document).ready(function() {
+				
+				$("#toTurn").animate(
+							{  "left": "+=10"}, 
+							{
+								step: function(now,fx) {
+								  //$(this).css('-webkit-transform','rotate('+now+'deg)'); 
+								},
+								duration:4000,
+								queue: false,
+								 specialEasing: {
+								  width: 'linear',
+								  height: 'linear',
+								  left: 'linear'
+								},
+								complete: function(){
+									console.log("complete animation!");
+								}
+							});​
+				
+					$('#click').click(function(){
+						console.log("CLICK!");
+				
+						
+					
+				});
+			
+			});
+			
+			
+		</script>
+	
+		
+		
+	</head>
+	<body>	
+		<div id="toTurn">
+			<div>
+				Hola hola
+			</div>
+			<img id="zombie1" src="./zombie.jpg" width="100" height="123" style="position: relative; left: 10px;" ></img>
+		</div>
+		<div>
+			Este es el palito a girar
+		</div>
+		<div id="click">
+			CLICK!
+		</div>
+	</body>
+</html>
