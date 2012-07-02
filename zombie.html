@@ -35,20 +35,30 @@
 					speed: 5,
 					// shots que puede aguantar un zombie
 					health: 5,
-					// lugares a donde va a ir,
-					// TODO: lista de walkto
-					_walkTo: [{x: 0, y: 0}],
-					// funcion de añadir walk_to
+					// movimientos
+					_walkTo: [],
+					/**
+					 * Añade un paso que dará el zombie
+					 * @param data.x indica el nº de pixeles que se quiere mover en el eje x (- izquierda, + arriba)
+					 * @param data.y indica el nº de pixeles que se quiere mover en el eje y (- arriba, + abajo)
+					 * @param data.limitScreen, boolean opcional: si se quiere limitar el desplazamiento a elementos dentro de la pantalla
+					 */
 					walkTo : function(data){
 						this._walkTo.push(data);
+						
 						return this;
 					},
-					
+					/**
+					 * comienza el proceso de andar a los walkTo especificados.
+					 */
 					start: function(){
 						// ejecutamos el proceso de ir a unas coordinadas
 						console.log(this);
 						this._walkTo_process();
 					},
+					/**
+					 * Detiene el movimiento.
+					 */
 					stop: function(){
 						//http://api.jquery.com/stop/
 						$element.stop();
@@ -73,14 +83,17 @@
 						// TODO: animation
 						switch(y){
 							case '+':
-							  // start animation hacia arriba
+							  // start animation hacia abajo
 							  break;
 							case '-':
-							 // start animation hacia abajo
+							 // start animation hacia arriba
 							  break;
 						}
 						
 					},
+					/**
+					 * kill zombie
+					 */
 					dead: function(){
 						this.stop();
 						// 1 empieza animacion
@@ -91,6 +104,9 @@
 							$element.remove();
 						});
 					},
+					/**
+					 * one hit to zombie
+					 */
 					shot: function(){
 						this.health--;
 						if (this.health == 0){
@@ -126,6 +142,41 @@
 					_walkTo_process: function(){
 						console.log($element);
 						var walkTo = this._walkTo.shift();
+						// comprobamos si no queremos salirnos
+						if (walkTo.limitScreen){
+
+							console.log("limitScreen activado, calculando limites máximos de movimiento");
+							// comprobamos donde estamos y si debemos limitar el x y el y
+							var currentPositionLeft = $element.offset().left;
+							console.log("posición actual del zombie: x: " + currentPositionLeft);
+							console.log("width del screen: " +  $(window).width());
+							// limite right
+							if ($element.width() + currentPositionLeft + walkTo.x > $(window).width()){
+								 walkTo.x = $(window).width() - ($element.width() + currentPositionLeft)
+							}
+							// limite left
+							else if (currentPositionLeft + walkTo.x <= 0){
+								walkTo.x = -(currentPositionLeft);
+							}
+							
+							// eje y
+							var currentPositionTop = $element.offset().top;
+							console.log("posición actual del zombie: y: " + currentPositionTop);
+							console.log("height del screen: " +  $(window).height());
+							console.log("alto del zombie: " +   $element.height());
+							// limite bottom
+							if ($element.height() + currentPositionTop + walkTo.y > $(window).height()){
+								 walkTo.y = $(window).height() - ($element.height() + currentPositionTop)
+							}
+							// limite top
+							else if (currentPositionTop + walkTo.y <= 0){
+								walkTo.y = -(currentPositionTop);
+							}
+							
+							console.log("limitando walkTo eje x al valor: " + walkTo.x);
+							console.log("limitando walkTo eje y al valor: " + walkTo.y);
+						}
+						
 						// calculamos donde estamos:
 						if (walkTo.x > 0){
 							this.turn_x('+');
@@ -191,22 +242,51 @@
 				
 				return  zombie;
 			}
+			
+		function randomMinToMax(min, max_v) {
+			var range = max_v - min + 1;
+			return Math.floor(Math.random()*range + min);
+		} 
+	
+		function createGame(){
+			var zombies = [];
+			var minX = 100;
+			var maxX = $(window).width() - 100;
+			var minY = 100;
+			var maxY =  $(window).height();
+			for (var i = 0; i < 10; i++){
+				var x = randomMinToMax(minX, maxX); 
+				var y = randomMinToMax(minY, maxY); 
+				zombies.push(createZombie(x, y));
+			}
+			
+			$.each(zombies, function(index, zombie){
+				
+				for (var i = 0; i < 10; i++){
+					var x = randomMinToMax(-maxX, maxX); 
+					var y = randomMinToMax(-maxY, maxY); 
+					zombie.walkTo({x: x,y: y,limitScreen:true});
+				}
+				zombie.start();
+			});
+		}
 		
 		
 		$(document).ready(function() {
-		
-		
+			createGame();
+		/*
 			var zombie = createZombie(10, 10);
 			var zombie2 = createZombie(500, 300);
 			var zombie3 = createZombie(600, 10);
-			/*
+			
 			$container.click(function(e){
 				zombie.shot();
 			});
-		*/
-			zombie.walkTo({x: 200, y: 300}).walkTo({x: 500, y: 100}).walkTo({x: -100, y: -30}).start();
-			zombie2.walkTo({x: -400, y: 300}).walkTo({x: 330, y: -50}).walkTo({x: -100, y: -40}).start();
-			zombie3.walkTo({x: -200, y: 100}).start();
+		
+			zombie.walkTo({x: -200, y: 300, limitScreen: true}).walkTo({x: 10000, y: 100, limitScreen: true}).walkTo({x: -100, y: 3000, limitScreen: true}).start();
+			//zombie2.walkTo({x: -600, y: 300, limitScreen: true}).walkTo({x: 330, y: -200, limitScreen: true}).walkTo({x: -100, y: -4000, limitScreen: true}).start();
+			//zombie3.walkTo({x: -200, y: 100}).start();
+			*/
 		});
 			
 			
