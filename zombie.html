@@ -95,6 +95,7 @@
 					 * kill zombie
 					 */
 					dead: function(){
+						this.onDie.call(this);
 						this.stop();
 						// 1 empieza animacion
 						// TODO: animacion
@@ -120,6 +121,18 @@
 							});
 							// effect shine_
 						}
+					},
+					/**
+					 * Callback que se llama cuando se acaba de andar
+					 */
+					onCompleteWalk: function(callback){
+						this.onCompleteWalk = callback;
+					},
+					/**
+					 * Callback que se ejecuta cuando se muere el zombie
+					 */
+					onDie: function(callback){
+						this.onDie = callback;
 					},
 					/**
 					 * métodos privados
@@ -194,6 +207,8 @@
 						
 						console.log("walking to: " + walkTo.x + ", " + walkTo.y);
 						var self = this;
+						// utilizamos esta variable de control
+						var currentTop = $element.offset().top;
 						// http://api.jquery.com/animate/
 						 $element.animate({
 							"left":  '+=' + walkTo.x ,
@@ -203,18 +218,25 @@
 								// para calcular la velocidad tenemos que calcular 
 								duration: this.speed * this._calculateDistance(walkTo.x, walkTo.y),
 								step: function(now, fx){
-									//console.log(now);
-									//console.log(fx);
-									// mejor: en vez de esto crear gifs con las partes necesarias
-									/*if ($container.attr("src") == "./zombie.jpg"){
-										$container.attr("src", "./zombie2.jpg");
+									/*
+									// efecto 3d:
+									var width = $element.width();
+									var height = $element.height();
+									//console.log("width del zombie: " + width);
+									//console.log("height del zombie: " + height);
+									if ($element.offset().top > currentTop){
+										var difference = $element.offset().top - currentTop;
+										currentTop = $element.offset().top;
+										$element.attr("width", width + difference + "px");
+										$element.attr("height", height + difference + "px");
 									}
-									else{
-										$container.attr("src", "./zombie.jpg");
-									}*/
-									
-									//self.stop();
-									
+									else if (currentTop > $element.offset().top) {
+										var difference = currentTop - $element.offset().top ;
+										currentTop = $element.offset().top;
+										$element.attr("width", width - difference + "px");
+										$element.attr("height", height - difference + "px");
+									}
+									*/
 								},
 								queue: false,
 								 specialEasing: {
@@ -228,6 +250,10 @@
 									if (self._walkTo.length >  0){
 										// giramos? turn_x o turn_y
 										self._walkTo_process();
+									}
+									else{
+										console.log(self.onCompleteWalk);
+										self.onCompleteWalk.call(self);
 									}
 								}
 							}
@@ -248,45 +274,67 @@
 			return Math.floor(Math.random()*range + min);
 		} 
 	
-		function createGame(){
-			var zombies = [];
-			var minX = 100;
-			var maxX = $(window).width() - 100;
-			var minY = 100;
-			var maxY =  $(window).height();
-			for (var i = 0; i < 10; i++){
-				var x = randomMinToMax(minX, maxX); 
-				var y = randomMinToMax(minY, maxY); 
-				zombies.push(createZombie(x, y));
-			}
-			
-			$.each(zombies, function(index, zombie){
+		function createRandomZombie(num){
+				var zombies = [];
+				var minX = 100;
+				var maxX = $(window).width() - 100;
+				var minY = 100;
+				var maxY =  $(window).height();
 				
-				for (var i = 0; i < 10; i++){
-					var x = randomMinToMax(-maxX, maxX); 
-					var y = randomMinToMax(-maxY, maxY); 
-					zombie.walkTo({x: x,y: y,limitScreen:true});
+				for (var i = 0; i < num; i++){
+					var y = randomMinToMax(minY, maxY - 100); 
+					// la x a la ziquierda o la derecha
+					var x = 0;
+					if (randomMinToMax(0,1) == 1){
+						x = $(window).width()- 200;
+					}
+					console.log("creamos en el x: " + x);
+					zombies.push(createZombie(x, y));
 				}
-				zombie.start();
-			});
-		}
-		
+				
+				$.each(zombies, function(index, zombie){
+				
+					
+					var x1 = randomMinToMax(-500, maxX-100); 
+					var y1 = randomMinToMax(-500, maxY-100); 
+					zombie.walkTo({x: x1,y: y1, limitScreen: true});
+					
+					
+					zombie.start();
+					
+					zombie.onCompleteWalk(function(){
+						var x = randomMinToMax(-maxX, maxX); 
+						var y = randomMinToMax(-maxY, maxY); 
+						this.walkTo({x: x,y: y,limitScreen:true});
+						this.start();
+					});
+				
+					zombie.onDie(function(){
+						createRandomZombie(2);
+					});
+				});
+			};
 		
 		$(document).ready(function() {
-			createGame();
-		/*
+			createRandomZombie(4);
+			/*
 			var zombie = createZombie(10, 10);
-			var zombie2 = createZombie(500, 300);
-			var zombie3 = createZombie(600, 10);
+			//var zombie2 = createZombie(500, 10);
+			//var zombie3 = createZombie(600, 10);
 			
-			$container.click(function(e){
-				zombie.shot();
+			zombie.walkTo({x: -200, y: 300, limitScreen: true}).walkTo({x: 10000, y: -3000, limitScreen: true}).start();
+			
+			zombie.onCompleteWalk(function(){
+				alert("complete!");
 			});
-		
-			zombie.walkTo({x: -200, y: 300, limitScreen: true}).walkTo({x: 10000, y: 100, limitScreen: true}).walkTo({x: -100, y: 3000, limitScreen: true}).start();
+			
+			zombie.onDie(function(){
+				alert("die!");
+			});
+			*/
 			//zombie2.walkTo({x: -600, y: 300, limitScreen: true}).walkTo({x: 330, y: -200, limitScreen: true}).walkTo({x: -100, y: -4000, limitScreen: true}).start();
 			//zombie3.walkTo({x: -200, y: 100}).start();
-			*/
+			
 		});
 			
 			
